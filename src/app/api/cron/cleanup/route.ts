@@ -1,8 +1,4 @@
 import { NextResponse } from "next/server";
-import { ConvexHttpClient } from "convex/browser";
-import { api } from "../../../../convex/_generated/api";
-
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export async function GET(request: Request) {
     // Verify authorization (Vercel sends this header for cron jobs)
@@ -13,8 +9,25 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Get Convex deployment URL (use .site for HTTP actions)
+    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+    if (!convexUrl) {
+        return NextResponse.json({ error: "CONVEX_URL not configured" }, { status: 500 });
+    }
+
+    // Convert cloud URL to site URL for HTTP actions
+    const siteUrl = convexUrl.replace(".cloud", ".site");
+
     try {
-        const result = await convex.mutation(api.cleanup.deleteOldGames, {});
+        const response = await fetch(`${siteUrl}/cleanup`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                ...(process.env.CRON_SECRET && { "Authorization": `Bearer ${process.env.CRON_SECRET}` }),
+            },
+        });
+
+        const result = await response.json();
 
         return NextResponse.json({
             success: true,
