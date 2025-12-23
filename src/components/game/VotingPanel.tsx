@@ -7,16 +7,16 @@ import { Badge } from "@/components/ui/badge";
 import { GameHeader } from "@/components/game/GameHeader";
 import { bs } from "@/lib/i18n/bs";
 import { Check, Vote, Users } from "lucide-react";
-import { Doc, Id } from "../../../../convex/_generated/dataModel";
+import { Game, Round, Player, Guess } from "@/lib/types";
 
 interface VotingPanelProps {
-    game: Doc<"games">;
-    currentRound: Doc<"rounds"> | null | undefined;
-    currentPlayer: Doc<"players"> | null | undefined;
-    guesses: Doc<"guesses">[];
-    players: Doc<"players">[];
+    game: Game;
+    currentRound: Round | null | undefined;
+    currentPlayer: Player | null | undefined;
+    guesses: Guess[];
+    players: Player[];
     isDrawer: boolean;
-    onVote: (guessId: Id<"guesses">) => void;
+    onVote: (guessId: string) => void;
     onShowResults: () => void;
     isHost: boolean;
     onEndGame?: () => void;
@@ -35,7 +35,7 @@ export function VotingPanel({
     onEndGame,
 }: VotingPanelProps) {
     const [hasVoted, setHasVoted] = useState(false);
-    const [selectedGuess, setSelectedGuess] = useState<Id<"guesses"> | null>(
+    const [selectedGuess, setSelectedGuess] = useState<string | null>(
         null
     );
 
@@ -46,7 +46,7 @@ export function VotingPanel({
 
     // Check if player already voted
     const playerHasVoted =
-        guesses.some((g) => g.votes.includes(currentPlayer?._id as Id<"players">)) ||
+        guesses.some((g) => g.votes.includes(currentPlayer?._id as string)) ||
         hasVoted;
 
     // Count total votes
@@ -54,7 +54,7 @@ export function VotingPanel({
     const eligibleVoters = players.length - 1; // Everyone except drawer
     const allVoted = totalVotes >= eligibleVoters;
 
-    const handleVote = async (guessId: Id<"guesses">) => {
+    const handleVote = async (guessId: string) => {
         if (playerHasVoted || isDrawer) return;
 
         // Check if it's their own guess

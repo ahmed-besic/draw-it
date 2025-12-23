@@ -8,14 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { GameHeader } from "@/components/game/GameHeader";
 import { bs } from "@/lib/i18n/bs";
 import { Send, Check, Users } from "lucide-react";
-import { Doc } from "../../../../convex/_generated/dataModel";
+import { Game, Round, Player, Guess } from "@/lib/types";
 
 interface GuessingPanelProps {
-    game: Doc<"games">;
-    currentRound: Doc<"rounds"> | null | undefined;
-    currentPlayer: Doc<"players"> | null | undefined;
-    guesses: Doc<"guesses">[];
-    players: Doc<"players">[];
+    game: Game;
+    currentRound: Round | null | undefined;
+    currentPlayer: Player | null | undefined;
+    guesses: Guess[];
+    players: Player[];
     isDrawer: boolean;
     onSubmitGuess: (text: string) => void;
     onStartVoting: () => void;

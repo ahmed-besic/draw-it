@@ -7,12 +7,12 @@ import { GameHeader } from "@/components/game/GameHeader";
 import { bs } from "@/lib/i18n/bs";
 import { Crown, Users, Copy, Check } from "lucide-react";
 import { useState } from "react";
-import { Doc } from "../../../../convex/_generated/dataModel";
+import { Game, Player } from "@/lib/types";
 
 interface LobbyProps {
-    game: Doc<"games">;
-    players: Doc<"players">[];
-    currentPlayer: Doc<"players"> | null | undefined;
+    game: Game;
+    players: Player[];
+    currentPlayer: Player | null | undefined;
     isHost: boolean;
     onStartGame: () => void;
     onEndGame?: () => void;

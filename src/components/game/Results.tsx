@@ -6,14 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { GameHeader } from "@/components/game/GameHeader";
 import { bs } from "@/lib/i18n/bs";
 import { Trophy, Star, ArrowRight, Home, Crown } from "lucide-react";
-import { Doc } from "../../../../convex/_generated/dataModel";
+import { Game, Round, Player, Guess } from "@/lib/types";
 
 interface ResultsProps {
-    game: Doc<"games">;
-    players: Doc<"players">[];
-    currentPlayer: Doc<"players"> | null | undefined;
-    round: Doc<"rounds"> | null | undefined;
-    guesses: Doc<"guesses">[];
+    game: Game;
+    players: Player[];
+    currentPlayer: Player | null | undefined;
+    round: Round | null | undefined;
+    guesses: Guess[];
     isGameOver: boolean;
     onNextRound: () => void;
     onEndGame?: () => void;

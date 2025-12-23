@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { GameHeader } from "@/components/game/GameHeader";
 import { bs } from "@/lib/i18n/bs";
 import { Eraser, Undo2, Send, Palette } from "lucide-react";
-import { Doc } from "../../../../convex/_generated/dataModel";
+import { Game, Round, Player } from "@/lib/types";
 
 interface DrawingCanvasProps {
-    game: Doc<"games">;
-    currentRound: Doc<"rounds"> | null | undefined;
-    currentPlayer: Doc<"players"> | null | undefined;
+    game: Game;
+    currentRound: Round | null | undefined;
+    currentPlayer: Player | null | undefined;
     isDrawer: boolean;
     isHost?: boolean;
     onSubmitDrawing: (drawing: string) => void;
