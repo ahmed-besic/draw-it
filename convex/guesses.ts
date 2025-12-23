@@ -115,11 +115,15 @@ export const calculateScores = mutation({
             }
         }
 
-        // Apply score updates
+        // Apply score updates - get player by ID from players table
         for (const update of scoreUpdates) {
-            const player = await ctx.db.get(update.playerId as any);
+            const player = await ctx.db
+                .query("players")
+                .filter((q) => q.eq(q.field("_id"), update.playerId))
+                .first();
+
             if (player) {
-                await ctx.db.patch(update.playerId as any, {
+                await ctx.db.patch(player._id, {
                     score: player.score + update.points,
                 });
             }
