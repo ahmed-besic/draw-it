@@ -11,7 +11,6 @@ import { VotingPanel } from "@/components/game/VotingPanel";
 import { Results } from "@/components/game/Results";
 import { bs } from "@/lib/i18n/bs";
 import { Loader2 } from "lucide-react";
-import { Id } from "../../../../convex/_generated/dataModel";
 
 function getSessionId(): string {
     if (typeof window === "undefined") return "";
@@ -135,9 +134,9 @@ export default function GamePage() {
         });
     };
 
-    const handleVote = async (guessId: Id<"guesses">) => {
+    const handleVote = async (guessId: string) => {
         if (!currentPlayer) return;
-        await vote({ guessId, playerId: currentPlayer._id });
+        await vote({ guessId: guessId as any, playerId: currentPlayer._id });
     };
 
     const handleShowResults = async () => {

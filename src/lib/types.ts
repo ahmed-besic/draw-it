@@ -32,7 +32,7 @@ export interface Round {
     drawerId: string;
     prompt: string;
     drawing?: string;
-    status: "drawing" | "guessing" | "voting" | "results";
+    status: "drawing" | "guessing" | "voting" | "results" | "complete";
     startedAt: number;
 }
 
