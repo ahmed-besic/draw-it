@@ -151,16 +151,22 @@ export const start = mutation({
 
         // Get random prompt
         const PROMPTS = [
-            "Kafa sa šlagom", "Planina Bjelašnica", "Sarajevska ruža",
-            "Ćevapi u somunu", "Stari most Mostar", "Baščaršija",
-            "Sebilj", "Bosanski lonac", "Tradicionalna nošnja",
-            "Begova džamija", "Burek sa sirom", "Fildžan kafe",
+            "Kafa sa šlagom", "Bjelašnica", "Baščaršija",
+            "Ćevapi u somunu", "Stari most Mostar", "Janje na ražnju",
+            "Sebilj", "Kengur", "Tradicionalna nošnja",
+            "Begova džamija", "Sirnica", "Fildžan",
             "Treska planina", "Una rijeka", "Bosanska kuća",
             "Sevdalinka", "Rakija", "Bosanski ćilim",
             "Avlija", "Zimska olimpijada", "Tulumbe",
-            "Hurmasice", "Baklava", "Zeljanica",
-            "Tufahije", "Šljivovica", "Bosanski konak",
-            "Džezva", "Sahan", "Sinija"
+            "Hurmasice", "Baklava", "Željeznica",
+            "Tufahije",
+            "Džezva", "Vijećnica",
+            "Uštipci", "Kozji most",
+            "Vrelo Bosne", "Šadrvan",
+            "Sarma", "Punjena paprika", "Grah",
+            "Krempita", "Oklagija", "Vrelo Bune",
+            "Bobovac", "Vodopad",
+            "Sutjeska"
         ];
         const prompt = PROMPTS[Math.floor(Math.random() * PROMPTS.length)];
 
