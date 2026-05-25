@@ -57,12 +57,26 @@ export default function GamePage() {
   useEffect(() => {
     if (!game || !sessionId || game.status === "finished") return;
 
-    void heartbeat({ gameId: game._id, sessionId });
-    const timer = window.setInterval(() => {
+    const sendHeartbeat = () => {
       void heartbeat({ gameId: game._id, sessionId });
-    }, 5_000);
+    };
 
-    return () => window.clearInterval(timer);
+    sendHeartbeat();
+    const timer = window.setInterval(sendHeartbeat, 5_000);
+    const handleVisible = () => {
+      if (document.visibilityState === "visible") sendHeartbeat();
+    };
+
+    window.addEventListener("focus", sendHeartbeat);
+    window.addEventListener("pageshow", sendHeartbeat);
+    document.addEventListener("visibilitychange", handleVisible);
+
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("focus", sendHeartbeat);
+      window.removeEventListener("pageshow", sendHeartbeat);
+      document.removeEventListener("visibilitychange", handleVisible);
+    };
   }, [game, heartbeat, sessionId]);
 
   if (game === undefined || !sessionId) {

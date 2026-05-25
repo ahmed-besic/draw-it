@@ -1,6 +1,6 @@
 import { Player } from "@/lib/types";
 
-export const INACTIVE_AFTER_MS = 20_000;
+export const INACTIVE_AFTER_MS = 120_000;
 
 export function isPlayerActive(player: Player, now = Date.now()) {
   return !player.leftAt && (player.lastSeenAt ?? player._creationTime) >= now - INACTIVE_AFTER_MS;

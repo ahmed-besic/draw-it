@@ -4,7 +4,7 @@ export const PHASE_DURATIONS = {
   voting: 30_000,
 } as const;
 
-export const INACTIVE_AFTER_MS = 20_000;
+export const INACTIVE_AFTER_MS = 120_000;
 export const MAX_ROUNDS = 3;
 export const MIN_PLAYERS = 2;
 
