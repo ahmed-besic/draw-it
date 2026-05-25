@@ -1,162 +1,118 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { GameHeader } from "@/components/game/GameHeader";
+import { PhaseStatus } from "@/components/game/PhaseStatus";
+import { StrokePreview } from "@/components/game/StrokePreview";
 import { bs } from "@/lib/i18n/bs";
-import { Send, Check, Users } from "lucide-react";
-import { Game, Round, Player, Guess } from "@/lib/types";
+import { Check, Send, Users } from "lucide-react";
+import { Game, Guess, Player, Round } from "@/lib/types";
+import { isPlayerActive } from "@/lib/game";
 
 interface GuessingPanelProps {
-    game: Game;
-    currentRound: Round | null | undefined;
-    currentPlayer: Player | null | undefined;
-    guesses: Guess[];
-    players: Player[];
-    isDrawer: boolean;
-    onSubmitGuess: (text: string) => void;
-    onStartVoting: () => void;
-    isHost: boolean;
-    onEndGame?: () => void;
+  game: Game;
+  currentRound: Round | null | undefined;
+  currentPlayer: Player | null | undefined;
+  guesses: Guess[];
+  players: Player[];
+  isDrawer: boolean;
+  isHost: boolean;
+  error?: string;
+  onSubmitGuess: (text: string) => void;
+  onStartVoting: () => void;
+  onEndGame?: () => void;
+  onLeaveGame?: () => void;
 }
 
 export function GuessingPanel({
-    game,
-    currentRound,
-    currentPlayer,
-    guesses,
-    players,
-    isDrawer,
-    onSubmitGuess,
-    onStartVoting,
-    isHost,
-    onEndGame,
+  game,
+  currentRound,
+  currentPlayer,
+  guesses,
+  players,
+  isDrawer,
+  isHost,
+  error,
+  onSubmitGuess,
+  onStartVoting,
+  onEndGame,
+  onLeaveGame,
 }: GuessingPanelProps) {
-    const [guess, setGuess] = useState("");
-    const [hasSubmitted, setHasSubmitted] = useState(false);
+  const [guess, setGuess] = useState("");
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const activeNonDrawers = players.filter(
+    (player) => player._id !== currentRound?.drawerId && isPlayerActive(player)
+  );
+  const submittedCount = guesses.filter((item) => !item.isCorrectAnswer).length;
+  const playerGuess = guesses.find(
+    (item) => item.playerId === currentPlayer?._id && !item.isCorrectAnswer
+  );
+  const hasPlayerSubmitted = !!playerGuess || hasSubmitted;
 
-    const playerGuess = guesses.find(
-        (g) => g.playerId === currentPlayer?._id && !g.isCorrectAnswer
-    );
-    const hasPlayerSubmitted = !!playerGuess || hasSubmitted;
+  const handleSubmit = async () => {
+    if (guess.trim().length < 1) return;
+    setHasSubmitted(true);
+    await onSubmitGuess(guess.trim());
+    setGuess("");
+  };
 
-    // Count how many players have submitted (excluding drawer and correct answer)
-    const submittedCount = guesses.filter((g) => !g.isCorrectAnswer).length;
-    const totalNonDrawers = players.length - 1;
-    const allSubmitted = submittedCount >= totalNonDrawers;
+  return (
+    <main className="app-shell p-4 pt-20">
+      <GameHeader gameCode={game.code} isHost={isHost} onEndGame={onEndGame} onLeaveGame={onLeaveGame} />
+      <div className="mx-auto max-w-md space-y-4">
+        <PhaseStatus
+          round={currentRound}
+          players={players}
+          label="Lažni odgovori"
+          submitted={submittedCount}
+          total={activeNonDrawers.length}
+        />
+        {error && <div className="error-card">{error}</div>}
 
-    const handleSubmit = async () => {
-        if (guess.trim().length < 1) return;
-        setHasSubmitted(true);
-        await onSubmitGuess(guess.trim());
-        setGuess("");
-    };
+        <Card className="overflow-hidden border-4 border-[var(--ink)] bg-[#fffaf0] p-0 shadow-[8px_8px_0_var(--ink)]">
+          <StrokePreview strokes={currentRound?.strokes} />
+        </Card>
 
-    return (
-        <main className="min-h-screen bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 p-4 pt-16">
-            <GameHeader gameCode={game.code} isHost={isHost} onEndGame={onEndGame} />
-            <div className="w-full max-w-md mx-auto space-y-4">
-                {/* Header */}
-                <Card className="bg-white/95 backdrop-blur-sm shadow-lg border-0">
-                    <CardContent className="py-3 text-center">
-                        <p className="text-sm text-gray-500">
-                            {bs.common.round} {game.currentRound} {bs.common.of}{" "}
-                            {game.maxRounds}
-                        </p>
-                        <p className="text-lg font-semibold text-gray-800">
-                            {bs.guessing.whatIsIt}
-                        </p>
-                    </CardContent>
-                </Card>
+        {isDrawer ? (
+          <div className="sketch-card text-center">
+            <p className="text-lg font-black text-[var(--ink)]">{bs.guessing.cantGuessOwn}</p>
+            <p className="mt-2 text-sm font-bold text-[var(--muted-ink)]">{bs.drawing.prompt} {currentRound?.prompt}</p>
+          </div>
+        ) : hasPlayerSubmitted ? (
+          <div className="sketch-card border-[var(--mint)] bg-[var(--mint)]/30 text-center">
+            <Check className="mx-auto mb-2 h-12 w-12 text-[var(--leaf)]" />
+            <p className="font-black text-[var(--ink)]">{bs.guessing.submitted}</p>
+            <p className="mt-1 text-sm font-bold text-[var(--muted-ink)]">{bs.guessing.waiting}</p>
+          </div>
+        ) : (
+          <div className="sketch-card space-y-3">
+            <Input
+              placeholder={bs.guessing.enterGuess}
+              value={guess}
+              onChange={(event) => setGuess(event.target.value)}
+              className="h-13 border-[3px] border-[var(--ink)] bg-white text-lg font-bold"
+              maxLength={60}
+              onKeyDown={(event) => event.key === "Enter" && handleSubmit()}
+            />
+            <Button className="sketch-button w-full" onClick={handleSubmit} disabled={guess.trim().length < 1}>
+              <Send className="h-5 w-5" />
+              {bs.guessing.submitGuess}
+            </Button>
+          </div>
+        )}
 
-                {/* Drawing Display */}
-                <Card className="bg-white shadow-2xl border-0 overflow-hidden">
-                    {currentRound?.drawing ? (
-                        <img
-                            src={currentRound.drawing}
-                            alt="Drawing to guess"
-                            className="w-full aspect-square object-contain bg-white"
-                        />
-                    ) : (
-                        <div className="w-full aspect-square bg-gray-100 flex items-center justify-center">
-                            <p className="text-gray-400">{bs.drawing.waiting}</p>
-                        </div>
-                    )}
-                </Card>
-
-                {/* Guess Input - Only for non-drawers who haven't submitted */}
-                {isDrawer ? (
-                    <Card className="bg-white/95 backdrop-blur-sm shadow-lg border-0">
-                        <CardContent className="py-6 text-center">
-                            <p className="text-gray-600">{bs.guessing.cantGuessOwn}</p>
-                            <p className="text-sm text-gray-400 mt-2">
-                                {bs.drawing.prompt} {currentRound?.prompt}
-                            </p>
-                        </CardContent>
-                    </Card>
-                ) : hasPlayerSubmitted ? (
-                    <Card className="bg-green-50 border-green-200 shadow-lg">
-                        <CardContent className="py-6 text-center">
-                            <Check className="w-12 h-12 text-green-500 mx-auto mb-2" />
-                            <p className="text-green-700 font-semibold">
-                                {bs.guessing.submitted}
-                            </p>
-                            <p className="text-sm text-gray-500 mt-2">
-                                {bs.guessing.waiting}
-                            </p>
-                        </CardContent>
-                    </Card>
-                ) : (
-                    <Card className="bg-white/95 backdrop-blur-sm shadow-lg border-0">
-                        <CardContent className="py-4 space-y-3">
-                            <Input
-                                placeholder={bs.guessing.enterGuess}
-                                value={guess}
-                                onChange={(e) => setGuess(e.target.value)}
-                                className="text-lg h-12"
-                                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-                            />
-                            <Button
-                                size="lg"
-                                className="w-full h-12 bg-gradient-to-r from-violet-600 to-purple-600"
-                                onClick={handleSubmit}
-                                disabled={guess.trim().length < 1}
-                            >
-                                <Send className="w-5 h-5 mr-2" />
-                                {bs.guessing.submitGuess}
-                            </Button>
-                        </CardContent>
-                    </Card>
-                )}
-
-                {/* Progress / Host Controls */}
-                <Card className="bg-white/95 backdrop-blur-sm shadow-lg border-0">
-                    <CardContent className="py-4">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-2">
-                                <Users className="w-5 h-5 text-gray-500" />
-                                <span className="text-gray-600">Odgovori:</span>
-                            </div>
-                            <Badge variant={allSubmitted ? "default" : "secondary"}>
-                                {submittedCount} / {totalNonDrawers}
-                            </Badge>
-                        </div>
-                        {isHost && (
-                            <Button
-                                size="lg"
-                                className="w-full h-12 bg-gradient-to-r from-amber-500 to-orange-500"
-                                onClick={onStartVoting}
-                                disabled={submittedCount < 1}
-                            >
-                                Počni glasanje
-                            </Button>
-                        )}
-                    </CardContent>
-                </Card>
-            </div>
-        </main>
-    );
+        <div className="sketch-card flex items-center justify-between p-3">
+          <span className="flex items-center gap-2 font-black text-[var(--ink)]"><Users className="h-5 w-5" /> Odgovori</span>
+          {isHost && (
+            <Button className="sketch-button bg-[var(--sun)] text-[var(--ink)]" onClick={onStartVoting} disabled={submittedCount < 1}>
+              Počni glasanje
+            </Button>
+          )}
+        </div>
+      </div>
+    </main>
+  );
 }

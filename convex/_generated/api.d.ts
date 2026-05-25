@@ -9,11 +9,13 @@
  */
 
 import type * as cleanup from "../cleanup.js";
+import type * as constants from "../constants.js";
 import type * as games from "../games.js";
 import type * as guesses from "../guesses.js";
 import type * as http from "../http.js";
 import type * as players from "../players.js";
 import type * as rounds from "../rounds.js";
+import type * as validators from "../validators.js";
 
 import type {
   ApiFromModules,
@@ -23,11 +25,13 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   cleanup: typeof cleanup;
+  constants: typeof constants;
   games: typeof games;
   guesses: typeof guesses;
   http: typeof http;
   players: typeof players;
   rounds: typeof rounds;
+  validators: typeof validators;
 }>;
 
 /**

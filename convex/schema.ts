@@ -1,6 +1,18 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
+const point = v.object({
+  x: v.number(),
+  y: v.number(),
+});
+
+const stroke = v.object({
+  id: v.string(),
+  color: v.string(),
+  size: v.number(),
+  points: v.array(point),
+});
+
 export default defineSchema({
   games: defineTable({
     code: v.string(),
@@ -30,6 +42,8 @@ export default defineSchema({
     isHost: v.boolean(),
     sessionId: v.string(),
     isConnected: v.boolean(),
+    lastSeenAt: v.optional(v.number()),
+    leftAt: v.optional(v.number()),
   })
     .index("by_game", ["gameId"])
     .index("by_session", ["sessionId"]),
@@ -39,7 +53,13 @@ export default defineSchema({
     roundNumber: v.number(),
     drawerId: v.id("players"),
     prompt: v.string(),
-    drawing: v.optional(v.string()), // Base64 canvas data
+    drawing: v.optional(v.string()), // Legacy base64 drawing kept for migration compatibility.
+    strokes: v.optional(v.array(stroke)),
+    strokeVersion: v.optional(v.number()),
+    answerOrder: v.optional(v.array(v.id("guesses"))),
+    phaseStartedAt: v.optional(v.number()),
+    phaseEndsAt: v.optional(v.number()),
+    scoredAt: v.optional(v.number()),
     status: v.union(
       v.literal("drawing"),
       v.literal("guessing"),
@@ -56,7 +76,7 @@ export default defineSchema({
     roundId: v.id("rounds"),
     playerId: v.id("players"),
     text: v.string(),
-    isCorrectAnswer: v.boolean(), // True if this is the actual prompt
+    isCorrectAnswer: v.boolean(),
     votes: v.array(v.id("players")),
   })
     .index("by_round", ["roundId"])

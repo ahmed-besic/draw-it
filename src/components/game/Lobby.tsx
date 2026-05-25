@@ -1,140 +1,102 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { GameHeader } from "@/components/game/GameHeader";
 import { bs } from "@/lib/i18n/bs";
-import { Crown, Users, Copy, Check } from "lucide-react";
-import { useState } from "react";
+import { Check, Copy, Crown, Users } from "lucide-react";
 import { Game, Player } from "@/lib/types";
+import { isPlayerActive } from "@/lib/game";
 
 interface LobbyProps {
-    game: Game;
-    players: Player[];
-    currentPlayer: Player | null | undefined;
-    isHost: boolean;
-    onStartGame: () => void;
-    onEndGame?: () => void;
+  game: Game;
+  players: Player[];
+  currentPlayer: Player | null | undefined;
+  isHost: boolean;
+  error?: string;
+  onStartGame: () => void;
+  onEndGame?: () => void;
+  onLeaveGame?: () => void;
 }
 
 export function Lobby({
-    game,
-    players,
-    currentPlayer,
-    isHost,
-    onStartGame,
-    onEndGame,
+  game,
+  players,
+  currentPlayer,
+  isHost,
+  error,
+  onStartGame,
+  onEndGame,
+  onLeaveGame,
 }: LobbyProps) {
-    const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const activePlayers = players.filter((player) => isPlayerActive(player));
+  const canStart = activePlayers.length >= 2;
 
-    const copyCode = async () => {
-        await navigator.clipboard.writeText(game.code);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
+  const copyCode = async () => {
+    await navigator.clipboard.writeText(game.code);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2000);
+  };
 
-    const canStart = players.length >= 2;
+  return (
+    <main className="app-shell flex items-center justify-center p-4 pt-20">
+      <GameHeader gameCode={game.code} isHost={isHost} onEndGame={onEndGame} onLeaveGame={onLeaveGame} />
+      <div className="w-full max-w-md space-y-4">
+        <section className="sketch-card text-center">
+          <p className="text-sm font-black uppercase tracking-[0.22em] text-[var(--muted-ink)]">{bs.lobby.gameCode}</p>
+          <h1 className="mt-2 font-mono text-5xl font-black tracking-[0.25em] text-[var(--ink)]">{game.code}</h1>
+          <p className="mt-3 text-sm font-bold text-[var(--muted-ink)]">{bs.lobby.shareCode}</p>
+          <Button variant="outline" size="sm" onClick={copyCode} className="mt-4 border-[3px] border-[var(--ink)] bg-white font-black shadow-[3px_3px_0_var(--ink)]">
+            {copied ? <Check className="h-4 w-4 text-[var(--leaf)]" /> : <Copy className="h-4 w-4" />}
+            {copied ? "Kopirano!" : "Kopiraj kod"}
+          </Button>
+        </section>
 
-    return (
-        <main className="min-h-screen bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 flex items-center justify-center p-4 pt-16">
-            <GameHeader gameCode={game.code} isHost={isHost} onEndGame={onEndGame} />
-            <div className="w-full max-w-md space-y-4">
-                {/* Game Code Card */}
-                <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border-0">
-                    <CardHeader className="text-center pb-2">
-                        <p className="text-sm text-gray-500">{bs.lobby.gameCode}</p>
-                        <CardTitle className="text-4xl font-mono tracking-[0.3em] text-violet-600">
-                            {game.code}
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-center">
-                        <p className="text-sm text-gray-500 mb-3">{bs.lobby.shareCode}</p>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={copyCode}
-                            className="gap-2"
-                        >
-                            {copied ? (
-                                <>
-                                    <Check className="w-4 h-4 text-green-600" />
-                                    Kopirano!
-                                </>
-                            ) : (
-                                <>
-                                    <Copy className="w-4 h-4" />
-                                    Kopiraj kod
-                                </>
-                            )}
-                        </Button>
-                    </CardContent>
-                </Card>
+        {error && <div className="error-card">{error}</div>}
 
-                {/* Players Card */}
-                <Card className="bg-white/95 backdrop-blur-sm shadow-2xl border-0">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="flex items-center gap-2 text-lg">
-                            <Users className="w-5 h-5 text-violet-600" />
-                            {bs.common.players}
-                            <Badge variant="secondary" className="ml-auto">
-                                {players.length} {bs.lobby.playersCount}
-                            </Badge>
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <ul className="space-y-2">
-                            {players.map((player) => (
-                                <li
-                                    key={player._id}
-                                    className={`flex items-center gap-2 p-2 rounded-lg ${player._id === currentPlayer?._id
-                                        ? "bg-violet-100"
-                                        : "bg-gray-50"
-                                        }`}
-                                >
-                                    {player.isHost && (
-                                        <Crown className="w-4 h-4 text-amber-500" />
-                                    )}
-                                    <span className="font-medium">{player.name}</span>
-                                    {player._id === currentPlayer?._id && (
-                                        <span className="text-sm text-gray-500">{bs.lobby.you}</span>
-                                    )}
-                                    {player.isHost && (
-                                        <Badge variant="outline" className="ml-auto text-xs">
-                                            {bs.lobby.host}
-                                        </Badge>
-                                    )}
-                                </li>
-                            ))}
-                        </ul>
-                    </CardContent>
-                </Card>
+        <section className="sketch-card">
+          <div className="mb-3 flex items-center gap-2">
+            <Users className="h-5 w-5 text-[var(--tomato)]" />
+            <h2 className="text-xl font-black text-[var(--ink)]">{bs.common.players}</h2>
+            <Badge className="ml-auto border-2 border-[var(--ink)] bg-[var(--mint)] text-[var(--ink)]">
+              {activePlayers.length} aktivno
+            </Badge>
+          </div>
+          <ul className="space-y-2">
+            {players.map((player) => {
+              const active = isPlayerActive(player);
+              return (
+                <li
+                  key={player._id}
+                  className={`flex items-center gap-2 rounded-xl border-2 border-[var(--ink)] p-3 font-bold ${
+                    player._id === currentPlayer?._id ? "bg-[var(--sun)]/40" : "bg-white"
+                  } ${!active ? "opacity-50" : ""}`}
+                >
+                  {player.isHost && <Crown className="h-4 w-4 text-[var(--sun-dark)]" />}
+                  <span className="flex-1 text-[var(--ink)]">{player.name}</span>
+                  {player._id === currentPlayer?._id && <span className="text-sm text-[var(--muted-ink)]">{bs.lobby.you}</span>}
+                  <Badge variant="outline" className="border-[var(--ink)] bg-white text-xs">
+                    {active ? (player.isHost ? bs.lobby.host : "spreman/na") : "offline"}
+                  </Badge>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
 
-                {/* Start Game Button (Host Only) */}
-                {isHost ? (
-                    <div className="space-y-2">
-                        <Button
-                            size="lg"
-                            className="w-full h-14 text-lg bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
-                            onClick={onStartGame}
-                            disabled={!canStart}
-                        >
-                            {bs.lobby.startGame}
-                        </Button>
-                        {!canStart && (
-                            <p className="text-center text-white/80 text-sm">
-                                {bs.lobby.minPlayers}
-                            </p>
-                        )}
-                    </div>
-                ) : (
-                    <Card className="bg-white/20 backdrop-blur-sm border-0">
-                        <CardContent className="py-4 text-center text-white">
-                            <p>{bs.lobby.waiting}</p>
-                        </CardContent>
-                    </Card>
-                )}
-            </div>
-        </main>
-    );
+        {isHost ? (
+          <div className="space-y-2">
+            <Button className="sketch-button h-14 w-full text-lg" onClick={onStartGame} disabled={!canStart}>
+              {bs.lobby.startGame}
+            </Button>
+            {!canStart && <p className="text-center text-sm font-bold text-[var(--muted-ink)]">{bs.lobby.minPlayers}</p>}
+          </div>
+        ) : (
+          <div className="sketch-card text-center font-black text-[var(--ink)]">{bs.lobby.waiting}</div>
+        )}
+      </div>
+    </main>
+  );
 }
